@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:startup_try_2/drawerScreen.dart';
 import 'package:startup_try_2/screens/home/home_screen.dart';
 import 'package:startup_try_2/shoppage.dart';
+import 'package:startup_try_2/drawer.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
 
@@ -12,6 +15,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  Future<List> getData() async{
+    final response=await http.get("https://shopera-test.000webhostapp.com/getData.php");
+    return jsonDecode(response.body);
+  }
+
 
   final _auth = FirebaseAuth.instance;
    FirebaseUser loggedInUser;
@@ -33,8 +42,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  var list = ["Shop1","Shop2","Shop3","Shop4","Shop5","Shop6","Shop7","Shop8","Shop9","Shop10"];
-  var star = [4,5,3,4,5,2,1,4,5,3];
+  //var list = ["Shop1","Shop2","Shop3","Shop4","Shop5","Shop6","Shop7","Shop8","Shop9","Shop10","Shop10","Shop10","Shop10","Shop10","Shop10"];
+  //var star = [4,5,3,4,5,2,1,4,5,3,2,3,4,1,4];
+
+
+
+
+
   int _currentIndex=0;
   List cardList=[
     Image.network(
@@ -63,14 +77,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    var orientation = MediaQuery.of(context).orientation;
+    //var orientation = MediaQuery.of(context).orientation;
     return
         Scaffold(
           backgroundColor: Colors.blue.shade900,
-          drawer: DrawerScreen(),
+          drawer: NavDrawer(),
           appBar: AppBar(
             backgroundColor: Colors.blue.shade900,
             title: Text("Welcome xyz"),
@@ -123,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                     //left: kDefaultPaddin,
                     //right: kDefaultPaddin,
                   ),
-                  height: width>height ? (width*list.length)/5.8 : (height*list.length)/5.7,
+                  height: width>height ? width/3.8 + (16+(width/8)) : height/3.6 + (16+(height/8)),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade200,
                     borderRadius: BorderRadius.only(
@@ -317,44 +331,19 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: list.length,
-                            itemBuilder : (BuildContext context,int index){
-                              return Container(
-                                margin: EdgeInsets.only(top: 8.0,left: width > height ? height/30 : width/30,right: width > height ? height/30 : width/30,bottom: 8.0),
-                                height: width > height ? width/8 : height/8,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade900,
-                                  borderRadius: BorderRadius.circular(20.0),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: width > height ? height/35 : width/35,
-                                    ),
-                                    CircleAvatar(
-                                      backgroundColor: Colors.blue.shade200,
-                                      radius: width > height ? width/18 : height/18,
-                                    ),
-                                    SizedBox(
-                                      width: width > height ? height/30 : width/30,
-                                    ),
-                                    Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        //SizedBox(height: height/0,),
-                                        Text(list[index],style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: width > height ? height/15 : width/15),),
-                                        Text("Category: abc",style: TextStyle(color: Colors.white,fontSize: width > height ? height/30 : width/30),),
-                                        StarDisplay(value: star[index],),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                        )
+                        child: FutureBuilder<List>(
+                          future: getData(),
+                          builder: (ctx,ss){
+                            if(ss.hasError){
+                              print("error");
+                            }if(ss.hasData){
+                              return Items(list: ss.data);
+                            }
+                            else{
+                              return CircularProgressIndicator();
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -367,33 +356,62 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+
+class Items extends StatelessWidget {
+  List list;
+  Items({this.list});
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+    //var orientation = MediaQuery.of(context).orientation;
+    return ListView.builder(
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: list == null ? 0 : list.length,
+      itemBuilder : (BuildContext context,int index){
+        return Container(
+          margin: EdgeInsets.only(top: 8.0,left: width > height ? height/30 : width/30,right: width > height ? height/30 : width/30,bottom: 8.0),
+          height: width > height ? width/8 : height/8,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade900,
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: width > height ? height/35 : width/35,
+              ),
+              CircleAvatar(
+                backgroundColor: Colors.blue.shade200,
+                radius: width > height ? width/18 : height/18,
+              ),
+              SizedBox(
+                width: width > height ? height/30 : width/30,
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //SizedBox(height: height/0,),
+                  Text(list[index]["Name"],style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: width > height ? height/15 : width/15),),
+                  Text(list[index]["Price"],style: TextStyle(color: Colors.white,fontSize: width > height ? height/30 : width/30),),
+                  //StarDisplay(value: star[index],),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+
 class DataSearch extends SearchDelegate<String>{
 
-  // String hos;
-  //
-  // DataSearch({this.hos});
 
-  final description = [
-    "Global standards in research and clinical practices and radio-diagnosis.",
-    "1st hospital to use Y shaped stent in th region",
-    "1st in Karnataka to do bone marrow translpant",
-    "Ranked No.3 among the best hospitals in the world",
-    "Awarded India's most promising and valuable hospital by Pharma Leaders 2014",
-  ];
-
-  final lead = [
-    "images/manipal.jpg",
-    "images/apollo.jpg",
-    "images/sagar.jpg",
-    "images/fortis.jpg",
-    "images/peopletree.jpg",
-  ];
-
-  final star_count = [5,4,4,4,5];
-
-  final eta_time = ["10:00","15:00","30:00","50:00","60:00"];
-
-  final hospitals = ["Manipal Hospital","Apollo Hospital","Sagar Hospital","Fortis Hospital","People Tree Hospital"];
+  final hospitals = ["Manipal Hospital","Shop1","Apollo Hospital","apollo","Sagar Hospital","Fortis Hospital","People Tree Hospital"];
 
   final recentHospitals = ["Manipal Hospital","Apollo Hospital","Sagar Hospital"];
 
@@ -425,14 +443,10 @@ class DataSearch extends SearchDelegate<String>{
   @override
   Widget buildSuggestions(BuildContext context) {
     final suggestionList = query.isEmpty ? recentHospitals :
-    hospitals.where((p) => p.startsWith(query)).toList();
+    hospitals.where((p) => (p.toLowerCase()).startsWith(query.toLowerCase())).toList();
 
     return ListView.builder(
       itemBuilder: (context,index) => ListTile(
-        // leading: Image.asset(lead[index],
-        //   height: 100,
-        //   width: 40,
-        // ),
         title: Card(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -458,44 +472,6 @@ class DataSearch extends SearchDelegate<String>{
                     ],
                   ),
                 ),
-                subtitle:
-                Text(description[index]),
-              ),
-              IconTheme(
-                data: IconThemeData(
-                  color: Colors.amber,
-                  size: 25,
-                ),
-                child: StarDisplay(value: star_count[index]),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      child: Text('ETA: ${eta_time[index]}', style: TextStyle(fontWeight: FontWeight.bold,),),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      child: Icon(Icons.phone),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      child: Icon(Icons.email),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      child: Icon(Icons.message),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

@@ -12,11 +12,11 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
 
-  String name,email,password;
+  String name = "";
+  String email= "";
+  String password = "";
 
   final _auth = FirebaseAuth.instance;
-  @override
-
 
   @override
   Widget _buildName(){
@@ -97,7 +97,7 @@ class _SignUpPageState extends State<SignUpPage> {
         onPressed: () async{
           try{
          final newUser = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-            if(newUser != null){
+            if(newUser != ""){
               Navigator.push(context, new MaterialPageRoute(builder: (context) => HomePage()));
             }
           }
@@ -152,7 +152,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ],
                   ),
-                  //_buildName(),
+                  _buildName(),
                   _buildEmail(),
                   _buildPassword(),
                  // _buildConfirmPassword(),

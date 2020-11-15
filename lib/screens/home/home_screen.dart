@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:startup_try_2/buy_now.dart';
 import 'package:startup_try_2/constants.dart';
 import 'package:startup_try_2/models/Product.dart';
-
+import 'package:startup_try_2/homepage.dart';
 import 'package:startup_try_2/screens/details/details_screen.dart';
-
+import 'package:startup_try_2/cart.dart';
 import 'components/item_card.dart';
 import '../../constants.dart';
 
@@ -18,22 +17,35 @@ class HomeScreen extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: Colors.deepPurpleAccent.shade100,
+      backgroundColor: Colors.blue.shade800,
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple.shade500,
+        backgroundColor: Colors.blue.shade900,
         elevation: 0,
         leading: FlatButton(onPressed: (){Navigator.pop(context);},child: Icon(Icons.arrow_back, color: Colors.white,)),
         actions: <Widget>[
-          Icon(Icons.search, color: Colors.white,),
           Container(
-            width: 60,
+            width: size.width/7,
+            child: FlatButton(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+            onPressed: (){showSearch(context: context, delegate: DataSearch());},
+              child: Icon(
+              Icons.search, color: Colors.white,
+              ),
+            ),
+          ),
+          Container(
+            width: size.width/7,
             //color: Colors.deepOrangeAccent,
             child: FlatButton(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               onPressed: (){
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => BuyNow(),),
+                    MaterialPageRoute(builder: (context) => Cart(),),
                   );
               },
               child: Icon(
